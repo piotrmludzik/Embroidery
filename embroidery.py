@@ -47,6 +47,7 @@ def draw_triangle(height, border_color=1, fill_color=1):
         1 1 1 1 1 1 1          1 1 1 1 1 1 1
     '''
     width = 2 * height - 1
+
     return create_triangle(height, width, fill_color, border_color)
 
 
@@ -67,12 +68,12 @@ def draw_christmas_tree(blocks=4, border_color=1, fill_color=1):
         0 1 2 2 2 2 2 2 2 1 0
         1 1 1 1 1 1 1 1 1 1 1
     '''
-    height = 3
+    height = 5
     width = 11
     # width = 5 + (blocks - 1) * 2  # 5 - the base of the tree in the first block; 2 - distance between the bases of the trees of the next blocks
 
     matrix = []
-    matrix = create_triangle(height, width, fill_color, border_color, border_last_row=False, base_width=7)
+    matrix = create_triangle(height, width, fill_color, border_color, False, 3)
 
     return matrix
 
@@ -97,64 +98,71 @@ def create_triangle(matrix_height, matrix_width, fill_color, border_color, borde
     '''
     Returns matrix filled with triangle pattern. Default values: base_width = matrix_width
 
-        0 0 0 1 0 0 0           0 0 0 1 0 0 0           0 0 0 0 0 1 0 0 0 0 0           0 0 0 1 2 2 2 1 0 0 0
-        0 0 1 2 1 0 0           0 0 1 2 1 0 0           0 0 0 0 1 2 1 0 0 0 0           0 0 1 2 2 2 2 2 1 0 0
-        0 1 2 2 2 1 0           0 1 2 2 2 1 0           0 0 0 1 2 2 2 1 0 0 0           0 1 2 2 2 2 2 2 2 1 0
+        0 0 0 1 0 0 0           0 0 0 1 0 0 0           0 0 0 0 0 1 0 0 0 0 0           0 0 1 2 2 2 2 2 1 0 0
+        0 0 1 2 1 0 0           0 0 1 2 1 0 0           0 0 0 0 1 2 1 0 0 0 0           0 1 2 2 2 2 2 2 2 1 0
+        0 1 2 2 2 1 0           0 1 2 2 2 1 0           0 0 0 1 1 1 1 1 0 0 0           1 2 2 2 2 2 2 2 2 2 1
         1 1 1 1 1 1 1           1 2 2 2 2 2 1
 
         height = 4              matrix_height = 4       matrix_height = None            matrix_height = None
         matrix_width = 7        matrix_width = 7        matrix_width = 11               matrix_width = 11
-        base_width=None         base_width=None         base_width=7                    base_width=None
+        base_width=None         base_width=None         base_width=5                    base_width=None
         border_last_row=True    border_last_row=False   border_last_row=True            border_last_row=False
     '''
+    # null cell is a cell to fill with some color in the next step of create triangle function
+    NULL_CELL = ""
+
     def fill_empty(matrix_height, matrix_width, base_width):
         '''Fills matrix with empty cells (zeros).'''
         matrix = []
 
+        empty_cell = (matrix_width - base_width) / 2 + (matrix_height - 1)  # number of empty cells one side from the middle column
         for row_no in range(matrix_height):
-            empty_cell = matrix_height - 1 - row_no  # number of empty cells in half of the row
             row = []
             for col_no in range(matrix_width):
-                row.append(0) if (col_no + 1 <= empty_cell or matrix_width - col_no <= empty_cell) else row.append("")  # empty cells from left or right side
+                row.append(0) if (col_no + 1 <= empty_cell or matrix_width - col_no <= empty_cell) else row.append(NULL_CELL)  # empty cells from left or right side
+
             matrix.append(row)
+            empty_cell -= 1
+
         return matrix
 
-    def fill_border(matrix, border_color):
+    def fill_border(matrix, border_color, border_last_row):
         '''Fills matrix with border cells.'''
-        height, width = len(matrix), len(matrix[0])
+        for row_no in range(matrix_height):
+            for col_no in range(matrix_width):
+                if matrix[row_no][col_no] == NULL_CELL:  # cell to fill
+                    # FIXME
+                    # if any([col_no == 0,                        # first column
+                    #         matrix[row_no][col_no - 1] == 0,    # after empty cell
+                    #         col_no == width - 1,                # last column
+                    #         matrix[row_no][col_no + 1] == 0]):  # before empty cell
+                    if col_no == 0 or matrix[row_no][col_no - 1] == 0 or col_no == matrix_width - 1 or matrix[row_no][col_no + 1] == 0:
+                        matrix[row_no][col_no] = border_color
 
-        for row_no in range(height):
-            for col_no in range(width):
-                if matrix[row_no][col_no] == "":  # cell to fill
-                    if row_no + 1 == height:  # last row
-                        if border_last_row:  # last row filled with border cells
-                            matrix[row_no][col_no] = border_color
-                        else:  # last row filled like middle row
-                            if col_no + 1 == 1 or col_no + 1 == width:
-                                matrix[row_no][col_no] = border_color
-                            else:
-                                matrix[row_no][col_no] = fill_color
-                    else:  # middle row to fill
-                        if matrix[row_no][col_no - 1] == 0 or matrix[row_no][col_no + 1] == 0:  # cell for empty or before empty cells
-                            matrix[row_no][col_no] = border_color
+        if border_last_row:
+            for col_no in range(matrix_width):  # fills the last row border cell
+                # FIXME
+                # matrix[height - 1][col_no] = border_color if matrix[row_no][col_no] == NULL_CELL:  # cell to fill
+                if matrix[row_no][col_no] == NULL_CELL:  # cell to fill
+                    matrix[matrix_height - 1][col_no] = border_color
         return matrix
 
     def fill_normal(matrix, fill_color):
         '''Fills matrix with normaln filled cells.'''
-        height, width = len(matrix), len(matrix[0])
-
-        for row_no in range(height):
-            for col_no in range(width):
-                if matrix[row_no][col_no] == "":  # cell to fill
+        for row_no in range(matrix_height):
+            for col_no in range(matrix_width):
+                if matrix[row_no][col_no] == NULL_CELL:  # cell to fill
                     matrix[row_no][col_no] = fill_color
         return matrix
 
     # ------- create_triangle main code -------
-    if base_width is None:
+    if base_width is None:  # base_width default value
         base_width = matrix_width
+    elif base_width < matrix_height:  # the minimum base fills the entire height
+        base_width = (matrix_height * 2) - 1
 
     matrix = fill_empty(matrix_height, matrix_width, base_width)
-    matrix = fill_border(matrix, border_color)
+    matrix = fill_border(matrix, border_color, border_last_row)
     matrix = fill_normal(matrix, fill_color)
 
     return matrix
@@ -169,5 +177,5 @@ if __name__ == '__main__':
     embroider(draw_rectangle(19, 19, 1, 2, 3), color_scheme)
     print("Triangle:")
     embroider(draw_triangle(10, border_color=1, fill_color=2), color_scheme)
-    # print("Christmas tree:")
-    # embroider(draw_christmas_tree(4), color_scheme)
+    print("Christmas tree:")
+    embroider(draw_christmas_tree(4, 1, 2), color_scheme)
