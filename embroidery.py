@@ -204,18 +204,11 @@ def create_triangle(matrix_height, matrix_width, fill_color, border_color, borde
         for row_no in range(matrix_height):
             for col_no in range(matrix_width):
                 if matrix[row_no][col_no] == NULL_CELL:  # cell to fill
-                    # FIXME
-                    # if any([col_no == 0,                        # first column
-                    #         matrix[row_no][col_no - 1] == 0,    # after empty cell
-                    #         col_no == width - 1,                # last column
-                    #         matrix[row_no][col_no + 1] == 0]):  # before empty cell
                     if col_no == 0 or matrix[row_no][col_no - 1] == ZERO_CELL or col_no == matrix_width - 1 or matrix[row_no][col_no + 1] == ZERO_CELL:
                         matrix[row_no][col_no] = border_color
 
         if border_last_row:
             for col_no in range(matrix_width):  # fills the last row border cell
-                # FIXME
-                # matrix[height - 1][col_no] = border_color if matrix[row_no][col_no] == NULL_CELL:  # cell to fill
                 if matrix[row_no][col_no] == NULL_CELL:  # cell to fill
                     matrix[matrix_height - 1][col_no] = border_color
         return matrix
